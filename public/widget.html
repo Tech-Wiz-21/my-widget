@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule a call</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #e0e6ed;
+            background: white;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #333;
+            margin: 0;
+        }
+
+        .lead-info {
+            padding: 15px 30px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            margin-bottom: 0;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .form-content {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e6ed;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            min-height: 40px;
+        }
+
+        .form-label {
+            width: 180px;
+            font-size: 14px;
+            color: #666;
+            text-align: right;
+            padding-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .form-field {
+            flex: 1;
+            position: relative;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-control:disabled {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .required-field {
+            border-left: 3px solid #ef4444;
+        }
+
+        .search-input {
+            position: relative;
+        }
+
+        .search-input input {
+            padding-left: 35px;
+        }
+
+        .search-input::before {
+            content: "🔍";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: "▼";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: #9ca3af;
+            pointer-events: none;
+        }
+
+        select.form-control {
+            appearance: none;
+            background: white;
+            cursor: pointer;
+            padding-right: 30px;
+        }
+
+        .datetime-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .datetime-row .form-control {
+            flex: 1;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #333;
+            margin: 0;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+
+        .calendar-widget {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            padding: 15px;
+            width: 300px;
+        }
+
+        .calendar-widget.show {
+            display: block;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .time-slot:hover {
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+
+        .time-slot.selected {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 20px 30px;
+            border-top: 1px solid #e0e6ed;
+            background: #f8f9fa;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+
+        .btn-primary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976d2;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .selected-owner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            background: white;
+        }
+
+        .selected-owner:hover {
+            border-color: #3b82f6;
+        }
+
+        .lock-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .disabled-field {
+            position: relative;
+        }
+
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .info-message {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .progress-info {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Schedule a call</h1>
+        </div>
+
+        <div class="lead-info">
+            <strong>📋 Bulk Call Scheduling:</strong> <span id="lead_count">0</span> leads selected for call scheduling
+        </div>
+
+        <div class="form-content">
+            <div class="section-title">Call Information</div>
+
+            <div class="form-row">
+                <div class="form-label">Call For</div>
+                <div class="form-field">
+                    <div class="select-wrapper">
+                        <select class="form-control required-field" disabled>
+                            <option>Lead</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Related To</div>
+                <div class="form-field">
+                    <div class="search-input">
+                        <input type="text" class="form-control" placeholder="Search accounts..." disabled>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Call Type</div>
+                <div class="form-field disabled-field">
+                    <select class="form-control" disabled>
+                        <option>Outbound</option>
+                    </select>
+                    <span class="lock-icon">🔒</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Outgoing Call Status</div>
+                <div class="form-field disabled-field">
+                    <select class="form-control" disabled>
+                        <option>Scheduled</option>
+                    </select>
+                    <span class="lock-icon">🔒</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Call Start Time</div>
+                <div class="form-field">
+                    <div class="datetime-row">
+                        <input type="date" id="call_date" class="form-control required-field">
+                        <input type="time" id="call_time" class="form-control required-field" value="14:00">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Call Owner</div>
+                <div class="form-field" style="position: relative;">
+                    <div class="selected-owner" onclick="toggleOwnerDropdown()" id="selected_owner">
+                        <div class="user-avatar">A</div>
+                        <div class="user-info">
+                            <div class="user-name">Atharv Pawle</div>
+                        </div>
+                        <span style="margin-left: auto;">▼</span>
+                    </div>
+                    <div id="owner_dropdown" class="dropdown-menu">
+                        <div class="search-input" style="padding: 10px;">
+                            <input type="text" placeholder="Search Users" onkeyup="filterOwners(this.value)">
+                        </div>
+                        <div id="owner_list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Subject</div>
+                <div class="form-field">
+                    <input type="text" id="call_subject" class="form-control required-field"
+                        placeholder="Call scheduled with lead">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Reminder</div>
+                <div class="form-field">
+                    <div class="select-wrapper">
+                        <select id="reminder" class="form-control">
+                            <option value="">None</option>
+                            <option value="5">5 minutes before</option>
+                            <option value="10">10 minutes before</option>
+                            <option value="15">15 minutes before</option>
+                            <option value="30">30 minutes before</option>
+                            <option value="60">1 hours before</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">Purpose Of Outgoing Call</div>
+
+            <div class="form-row">
+                <div class="form-label">Call Purpose</div>
+                <div class="form-field">
+                    <div class="select-wrapper">
+                        <select id="call_purpose" class="form-control">
+                            <option value="">-None-</option>
+                            <option value="Prospecting">Prospecting</option>
+                            <option value="Administrative">Administrative</option>
+                            <option value="Negotiation">Negotiation</option>
+                            <option value="Demo">Demo</option>
+                            <option value="Project">Project</option>
+                            <option value="Desk Work">Desk Work</option>
+                            <option value="Product Feedback">Product Feedback</option>
+                            <option value="Payment Collection & Reconciliation">Payment Collection & Reconciliation
+                            </option>
+
+                            <!-- State-based Acquisition Campaigns -->
+                            <option value="WV Acquisition - SX Products Family">WV Acquisition - SX Products Family
+                            </option>
+                            <option value="ID Acquisition - SX Products Family">ID Acquisition - SX Products Family
+                            </option>
+                            <option value="WA Acquisition - SX Products Family">WA Acquisition - SX Products Family
+                            </option>
+                            <option value="DE Acquisition - SX Products Family">DE Acquisition - SX Products Family
+                            </option>
+                            <option value="DC Acquisition - SX Products Family">DC Acquisition - SX Products Family
+                            </option>
+                            <option value="CO Acquisition - SX Products Family">CO Acquisition - SX Products Family
+                            </option>
+                            <option value="MS Acquisition - SX Products Family">MS Acquisition - SX Products Family
+                            </option>
+                            <option value="NM Acquisition - SX Products Family">NM Acquisition - SX Products Family
+                            </option>
+                            <option value="UT Acquisition - SX Products Family">UT Acquisition - SX Products Family
+                            </option>
+                            <option value="MO Acquisition - SX Products Family">MO Acquisition - SX Products Family
+                            </option>
+                            <option value="MN Acquisition - SX Products Family">MN Acquisition - SX Products Family
+                            </option>
+                            <option value="CA Acquisition - SX Products Family">CA Acquisition - SX Products Family
+                            </option>
+                            <option value="KS Acquisition - SX Products Family">KS Acquisition - SX Products Family
+                            </option>
+                            <option value="VA Acquisition - SX Products Family">VA Acquisition - SX Products Family
+                            </option>
+                            <option value="KY Acquisition - SX Products Family">KY Acquisition - SX Products Family
+                            </option>
+                            <option value="WI Acquisition - SX Products Family">WI Acquisition - SX Products Family
+                            </option>
+                            <option value="OH Acquisition - SX Products Family">OH Acquisition - SX Products Family
+                            </option>
+                            <option value="OK Acquisition - SX Products Family">OK Acquisition - SX Products Family
+                            </option>
+                            <option value="SC Acquisition - SX Products Family">SC Acquisition - SX Products Family
+                            </option>
+                            <option value="OR Acquisition - SX Products Family">OR Acquisition - SX Products Family
+                            </option>
+                            <option value="New Jersey-SX Products Family">New Jersey-SX Products Family</option>
+                            <option value="Tennessee-SX Products Family">Tennessee-SX Products Family</option>
+                            <option value="Texas Acquisition - SX Products Family">Texas Acquisition - SX Products
+                                Family</option>
+                            <option value="Hawaii-SX Products Family">Hawaii-SX Products Family</option>
+                            <option value="Massachusetts Acquisition - SX Products Family">Massachusetts Acquisition -
+                                SX Products Family</option>
+                            <option value="Florida Acquisition - SX Products Family">Florida Acquisition - SX Products
+                                Family</option>
+                            <option value="North Carolina Acquisition - SX Products Family">North Carolina Acquisition -
+                                SX Products Family</option>
+
+                            <!-- Customer Acquisition Campaigns -->
+                            <option value="RI- Customer Acquisition Campaign">RI- Customer Acquisition Campaign</option>
+                            <option value="NV- Customer Acquisition Campaign">NV- Customer Acquisition Campaign</option>
+                            <option value="NY-New Client Acquisition Campaign">NY-New Client Acquisition Campaign
+                            </option>
+                            <option value="MD- Customer Acquisition Campaign">MD- Customer Acquisition Campaign</option>
+                            <option value="LA-Customer Acquisition Campaign">LA-Customer Acquisition Campaign</option>
+                            <option value="IL-Customer Acquisition Campaign">IL-Customer Acquisition Campaign</option>
+                            <option value="AZ- Customer Acquisition Campaign">AZ- Customer Acquisition Campaign</option>
+                            <option value="California- Customer Acquisition Campaign">California- Customer Acquisition
+                                Campaign</option>
+                            <option value="Alabama - Customer Acquisition Campaign">Alabama - Customer Acquisition
+                                Campaign</option>
+                            <option value="PA- Customer Acquisition Campaign">PA- Customer Acquisition Campaign</option>
+                            <option value="Georgia- Customer Acquisition Campaign">Georgia- Customer Acquisition
+                                Campaign</option>
+                            <option value="Connecticut- Customer Acquisition Campaign">Connecticut- Customer Acquisition
+                                Campaign</option>
+                            <option value="NC- Customer Acquisition Campaign">NC- Customer Acquisition Campaign</option>
+                            <option value="Florida- Customer Acquisition Campaign">Florida- Customer Acquisition
+                                Campaign</option>
+                            <option value="Texas-Customer Acquisition Campaign">Texas-Customer Acquisition Campaign
+                            </option>
+                            <option value="New Client Acquisition Campaign">New Client Acquisition Campaign</option>
+                            <option value="IA-SX Products Family">IA-SX Products Family</option>
+
+                            <!-- Specific Campaigns & Programs -->
+                            <option value="IST AM calling list">IST AM calling list</option>
+                            <option value="New client acquisition : May and June 23">New client acquisition : May and
+                                June 23</option>
+                            <option value="Samples sent in April and May">Samples sent in April and May</option>
+                            <option value="Kama Lustra80">Kama Lustra80</option>
+                            <option value="Send Herbal Products">Send Herbal Products</option>
+                            <option value="Attempt 2 for Lead Status Manager not there">Attempt 2 for Lead Status
+                                Manager not there</option>
+                            <option value="Herbal Product Manual Campaign -Osmar">Herbal Product Manual Campaign -Osmar
+                            </option>
+                            <option value="USA visit Jan 2024">USA visit Jan 2024</option>
+                            <option
+                                value="Christmas Offer For min 500 quantity (Kamagra Chewable $3)&(Kamagra 100 mg gold 2.5)">
+                                Christmas Offer For min 500 quantity (Kamagra Chewable $3)&(Kamagra 100 mg gold 2.5)
+                            </option>
+                            <option value="Dormant account activation">Dormant account activation</option>
+                            <option value="Kama Exstasy 200">Kama Exstasy 200</option>
+                            <option value="Kamagra 100 MG Sale">Kamagra 100 MG Sale</option>
+                            <option value="Adult entertainment Center- Client Acquisition">Adult entertainment Center-
+                                Client Acquisition</option>
+                            <option value="Michigan Client Acquisition">Michigan Client Acquisition</option>
+                            <option value="Follow up - Sample Sent">Follow up - Sample Sent</option>
+                            <option value="Indiana Client Acquisition">Indiana Client Acquisition</option>
+                            <option value="Arkansas Client Acquisition">Arkansas Client Acquisition</option>
+                            <option value="Sample Send- Herbal Extra Strong">Sample Send- Herbal Extra Strong</option>
+                            <option value="Regular Recurring Order Taking">Regular Recurring Order Taking</option>
+                            <option value="Arizona Client Acquisition">Arizona Client Acquisition</option>
+                            <option value="Client Inbound Missed Call">Client Inbound Missed Call</option>
+                            <option value="Super Kamagra Jelly Stock Clearance">Super Kamagra Jelly Stock Clearance
+                            </option>
+                            <option value="New York Client Acquisition">New York Client Acquisition</option>
+                            <option value="Sales Order Calls">Sales Order Calls</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Call Agenda</div>
+                <div class="form-field">
+                    <textarea id="call_agenda" class="form-control" rows="3"
+                        placeholder="Brief description of the call agenda..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Preferred Call Timings</div>
+                <div class="form-field">
+                    <div class="select-wrapper">
+                        <select id="preferred_timings" class="form-control">
+                            <option value="">-None-</option>
+                            <option value="9 AM - 11 AM (EST)">9 AM - 11 AM (EST)</option>
+                            <option value="11 AM - 2 PM (EST)">11 AM - 2 PM (EST)</option>
+                            <option value="2 PM - 6 PM (EST)">2 PM - 6 PM (EST)</option>
+                            <option value="9 AM - 11 AM (CST)">9 AM - 11 AM (CST)</option>
+                            <option value="11 AM - 2 PM (CST)">11 AM - 2 PM (CST)</option>
+                            <option value="2 PM - 6 PM (CST)">2 PM - 6 PM (CST)</option>
+                            <option value="9 AM - 11 AM (MST)">9 AM - 11 AM (MST)</option>
+                            <option value="11 AM - 2 PM (MST)">11 AM - 2 PM (MST)</option>
+                            <option value="2 PM - 6 PM (MST)">2 PM - 6 PM (MST)</option>
+                            <option value="9 AM - 11 AM (PST)">9 AM - 11 AM (PST)</option>
+                            <option value="11 AM - 2 PM (PST)">11 AM - 2 PM (PST)</option>
+                            <option value="2 PM - 6 PM (PST)">2 PM - 6 PM (PST)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="status_message" class="status-message hidden"></div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-cancel" onclick="cancelSchedule()">Cancel</button>
+            <button class="btn btn-primary" id="schedule_btn" onclick="scheduleCall()">Schedule</button>
+        </div>
+    </div>
+
+    <script>
+        let leadIds = [];
+        let selectedOwner = {
+            id: "357451000020463001",
+            name: "Atharv Pawle",
+            email: "atharv@nativeorigin.in",
+            avatar: "A"
+        };
+
+        const owners = [
+            { id: "357451000020463001", name: "Atharv Pawle", email: "atharv@nativeorigin.in", avatar: "A" },
+            { id: "357451000000316001", name: "Joseph Castallino", email: "joseph@americanwellness.biz", avatar: "J" },
+            { id: "357451000007376001", name: "Kaya Mason", email: " kaya@americanwellness.biz", avatar: "KM" },
+            { id: "357451000000308001", name: "Kim Jones", email: "kim@americanwellness.biz", avatar: "KJ" },
+            { id: "357451000000274001", name: "Kurt Holston", email: "kurt@americanwellness.biz", avatar: "KH" },
+            { id: "357451000024808001", name: "Neil Davis", email: "neil@americanwellness.biz", avatar: "ND" },
+            { id: "357451000033754001", name: "Rachel Morgan", email: "rachel.morgan@americanwellness.biz", avatar: "RM" },
+            { id: "357451000033167416", name: "Ron Shetty", email: "ron@americanwellness.biz", avatar: "RS" },
+            { id: "357451000002489003", name: "Sales Processor", email: "orders@americanwellness.biz", avatar: "SP" },
+            { id: "357451000027972884", name: "Sam Reed", email: "sam.reed@americanwellness.biz", avatar: "SR" },
+            { id: "357451000031401001", name: "Tech Team", email: "tech@americanwellness.biz", avatar: "TT" },
+        ];
+
+        const timeSlots = [
+            "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+            "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
+            "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM"
+        ];
+
+        window.onload = () => {
+            // Get lead IDs from URL
+            const params = new URLSearchParams(window.location.search);
+            const leadIdsRaw = params.get("recordIds");
+            leadIds = leadIdsRaw ? leadIdsRaw.split(",").filter(id => id.trim()) : [];
+
+            document.getElementById("lead_count").innerText = leadIds.length;
+
+            // Set default date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById("call_date").value = tomorrow.toISOString().split('T')[0];
+
+            // Set default time to 2:00 PM in 24-hour format
+            document.getElementById("call_time").value = "14:00";
+
+            // Initialize owners dropdown
+            initializeOwnersDropdown();
+            // Remove initializeTimeSlots() since we don't need it anymore
+
+            // If no leads selected, show error
+            if (leadIds.length === 0) {
+                showMessage("No leads selected. Please select leads from the CRM and try again.", "error");
+                document.getElementById("schedule_btn").disabled = true;
+            } else {
+                // Show lead processing info
+                const infoText = leadIds.length === 1
+                    ? "1 lead will be processed"
+                    : `${leadIds.length} leads will be processed in optimized batches`;
+                showMessage(`📋 Ready to schedule: ${infoText}`, "info");
+            }
+        };
+
+        function initializeOwnersDropdown() {
+            const ownerList = document.getElementById("owner_list");
+            ownerList.innerHTML = "";
+
+            owners.forEach(owner => {
+                const item = document.createElement("div");
+                item.className = "dropdown-item";
+                item.onclick = () => selectOwner(owner);
+                item.innerHTML = `
+          <div class="user-avatar">${owner.avatar}</div>
+          <div class="user-info">
+            <div class="user-name">${owner.name}</div>
+            <div class="user-email">${owner.email}</div>
+          </div>
+        `;
+                ownerList.appendChild(item);
+            });
+        }
+
+        function initializeTimeSlots() {
+            const timeSlotsContainer = document.getElementById("time_slots");
+            timeSlotsContainer.innerHTML = "";
+
+            timeSlots.forEach(time => {
+                const slot = document.createElement("div");
+                slot.className = "time-slot";
+                slot.textContent = time;
+                slot.onclick = () => selectTime(time);
+                timeSlotsContainer.appendChild(slot);
+            });
+        }
+
+        function toggleOwnerDropdown() {
+            const dropdown = document.getElementById("owner_dropdown");
+            dropdown.classList.toggle("show");
+        }
+
+        function toggleTimeDropdown() {
+            const dropdown = document.getElementById("time_dropdown");
+            dropdown.classList.toggle("show");
+        }
+
+        function selectOwner(owner) {
+            selectedOwner = owner;
+            const selectedDiv = document.getElementById("selected_owner");
+            selectedDiv.innerHTML = `
+        <div class="user-avatar">${owner.avatar}</div>
+        <div class="user-info">
+          <div class="user-name">${owner.name}</div>
+        </div>
+        <span style="margin-left: auto;">▼</span>
+      `;
+            toggleOwnerDropdown();
+        }
+
+        function selectTime(time) {
+            document.getElementById("call_time").value = time;
+
+            // Update selected state
+            document.querySelectorAll(".time-slot").forEach(slot => {
+                slot.classList.remove("selected");
+            });
+            event.target.classList.add("selected");
+
+            toggleTimeDropdown();
+        }
+
+        function filterOwners(searchTerm) {
+            const ownerList = document.getElementById("owner_list");
+            const items = ownerList.querySelectorAll(".dropdown-item");
+
+            items.forEach(item => {
+                const name = item.querySelector(".user-name").textContent.toLowerCase();
+                const email = item.querySelector(".user-email").textContent.toLowerCase();
+
+                if (name.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase())) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById("status_message");
+            messageDiv.className = `status-message ${type}-message`;
+            messageDiv.textContent = message;
+            messageDiv.classList.remove("hidden");
+
+            setTimeout(() => {
+                messageDiv.classList.add("hidden");
+            }, 5000);
+        }
+
+        function cancelSchedule() {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ action: 'close' }, '*');
+            } else {
+                window.close();
+            }
+        }
+
+        async function scheduleCall() {
+            const btn = document.getElementById("schedule_btn");
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Processing...";
+
+            try {
+                // Validate required fields
+                const callDate = document.getElementById("call_date").value;
+                const callTime = document.getElementById("call_time").value;
+                const subject = document.getElementById("call_subject").value;
+
+                if (!callDate || !callTime || !subject) {
+                    throw new Error("Please fill in all required fields (Date, Time, Subject)");
+                }
+
+                if (leadIds.length === 0) {
+                    throw new Error("No leads selected for scheduling");
+                }
+
+                // Convert time to proper format for backend
+                const dateTimeString = convertToISTFormat(callDate, callTime);
+
+                const payload = {
+                    leadIds: leadIds,
+                    start_time: dateTimeString,
+                    call_owner: selectedOwner.id,
+                    subject: subject.trim(),
+                    purpose: document.getElementById("call_purpose").value || "Prospecting",
+                    agenda: document.getElementById("call_agenda").value || "Follow-up call",
+                    preferred_timings: document.getElementById("preferred_timings").value || "None", // 👈 ADD THIS
+                    reminder: document.getElementById("reminder").value || "None" // 👈 ADD THIS
+                };
+                console.log("📤 Sending payload:", payload);
+                showMessage(`🔄 Processing ${leadIds.length} leads in batches...`, "info");
+
+                // Update button to show progress
+                btn.textContent = `Processing ${leadIds.length} leads...`;
+
+                const response = await fetch("/api/schedule-calls", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                console.log("📨 Response received:", data);
+
+                if (response.ok) {
+                    // Enhanced success message with details
+                    const { summary, results } = data;
+                    let successMsg = `✅ Bulk scheduling complete!\n`;
+                    successMsg += `📊 ${summary.successfulCalls}/${summary.totalLeads} calls created successfully`;
+                    successMsg += `\n📈 Success rate: ${summary.successRate}`;
+
+                    if (summary.failedCalls > 0) {
+                        successMsg += `\n⚠️ ${summary.failedCalls} calls failed - check console for details`;
+                        console.warn("Failed calls:", data.errors);
+                    }
+
+                    showMessage(successMsg, "success");
+
+                    // Show detailed results in console
+                    console.log("📋 Detailed Results:", results);
+
+                    // Auto-close after success (optional)
+                    setTimeout(() => {
+                        if (summary.successfulCalls > 0) {
+                            cancelSchedule();
+                        }
+                    }, 3000);
+                } else {
+                    throw new Error(data.message || "Failed to schedule calls");
+                }
+
+            } catch (error) {
+                console.error("❌ Scheduling error:", error);
+                showMessage("❌ " + error.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        function convertToISTFormat(date, time) {
+            // time is already in HH:MM format from input type="time"
+            return `${date} ${time}:00`;
+        }
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('#selected_owner') && !event.target.closest('#owner_dropdown')) {
+                document.getElementById("owner_dropdown").classList.remove("show");
+            }
+
+        });
+    </script>
+</body>
+
+</html>
