@@ -687,11 +687,17 @@
         ];
 
         window.onload = () => {
-            // Get lead IDs from URL
-            const rawParam = new URLSearchParams(window.location.search).get('recordIds');
-            const decodedParam = decodeURIComponent(rawParam || "");
-            leadIds = decodedParam.split(',').filter(id => id.trim());
-            console.log("✅ Final Parsed Lead IDs:", leadIds);
+            const params = new URLSearchParams(window.location.search);
+            const recordIdsParam = params.get('recordIds');
+
+            if (recordIdsParam) {
+                // %2C gets decoded automatically by URLSearchParams
+                leadIds = recordIdsParam.split(',').filter(id => id.trim());
+                console.log("✅ Parsed Lead IDs:", leadIds);
+            } else {
+                console.log("❌ No recordIds in URL");
+                // leadIds remains an empty array as initialized globally, which is the desired behavior.
+            }
 
             document.getElementById("lead_count").innerText = leadIds.length;
 
