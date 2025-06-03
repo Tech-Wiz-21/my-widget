@@ -688,9 +688,10 @@
 
         window.onload = () => {
             // Get lead IDs from URL
-            const recordIds = new URLSearchParams(window.location.search).get('recordIds');
-            leadIds = recordIds ? recordIds.split(',').filter(id => id.trim()) : [];
-            console.log("Lead IDs:", leadIds);
+            const rawParam = new URLSearchParams(window.location.search).get('recordIds');
+            const decodedParam = decodeURIComponent(rawParam || "");
+            leadIds = decodedParam.split(',').filter(id => id.trim());
+            console.log("✅ Final Parsed Lead IDs:", leadIds);
 
             document.getElementById("lead_count").innerText = leadIds.length;
 
