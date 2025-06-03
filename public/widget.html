@@ -687,16 +687,20 @@
         ];
 
         window.onload = () => {
+            // FIXED CODE - Better URL parameter handling
             const params = new URLSearchParams(window.location.search);
             const recordIdsParam = params.get('recordIds');
 
             if (recordIdsParam) {
-                // %2C gets decoded automatically by URLSearchParams
-                leadIds = recordIdsParam.split(',').filter(id => id.trim());
+                // Handle both URL-encoded and regular commas
+                const decodedParam = decodeURIComponent(recordIdsParam);
+                leadIds = decodedParam.split(',').filter(id => id.trim());
+                console.log("✅ Raw param:", recordIdsParam);
+                console.log("✅ Decoded param:", decodedParam);
                 console.log("✅ Parsed Lead IDs:", leadIds);
             } else {
                 console.log("❌ No recordIds in URL");
-                // leadIds remains an empty array as initialized globally, which is the desired behavior.
+                leadIds = [];
             }
 
             document.getElementById("lead_count").innerText = leadIds.length;
