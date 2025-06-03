@@ -658,7 +658,7 @@
     </div>
 
     <script>
-        let leadIds = [];
+        let leadIds = "";
         let selectedOwner = {
             id: "357451000020463001",
             name: "Atharv Pawle",
@@ -687,23 +687,23 @@
         ];
 
         window.onload = () => {
-            // FIXED CODE - Better URL parameter handling
+            // NEW APPROACH - Keep raw format, decode only when needed
             const params = new URLSearchParams(window.location.search);
             const recordIdsParam = params.get('recordIds');
 
             if (recordIdsParam) {
-                // Handle both URL-encoded and regular commas
-                const decodedParam = decodeURIComponent(recordIdsParam);
-                leadIds = decodedParam.split(',').filter(id => id.trim());
-                console.log("✅ Raw param:", recordIdsParam);
-                console.log("✅ Decoded param:", decodedParam);
-                console.log("✅ Parsed Lead IDs:", leadIds);
+                // Store raw parameter (still encoded)
+                leadIds = recordIdsParam; // Keep as single string for now
+                console.log("✅ Raw recordIds param:", recordIdsParam);
+                
+                // For display purposes, show count
+                const decodedForCount = decodeURIComponent(recordIdsParam).split(',').filter(id => id.trim());
+                document.getElementById("lead_count").innerText = decodedForCount.length;
+                console.log("✅ Lead count:", decodedForCount.length);
             } else {
                 console.log("❌ No recordIds in URL");
-                leadIds = [];
+                leadIds = "";
             }
-
-            document.getElementById("lead_count").innerText = leadIds.length;
 
             // Set default date to tomorrow
             const tomorrow = new Date();
@@ -715,17 +715,17 @@
 
             // Initialize owners dropdown
             initializeOwnersDropdown();
-            // Remove initializeTimeSlots() since we don't need it anymore
 
-            // If no leads selected, show error
-            if (leadIds.length === 0) {
+            // Updated validation for new format
+            if (!leadIds || leadIds === "") {
                 showMessage("No leads selected. Please select leads from the CRM and try again.", "error");
                 document.getElementById("schedule_btn").disabled = true;
             } else {
-                // Show lead processing info
-                const infoText = leadIds.length === 1
+                // For display, decode to get actual count
+                const leadCount = decodeURIComponent(leadIds).split(',').filter(id => id.trim()).length;
+                const infoText = leadCount === 1
                     ? "1 lead will be processed"
-                    : `${leadIds.length} leads will be processed in optimized batches`;
+                    : `${leadCount} leads will be processed in optimized batches`;
                 showMessage(`📋 Ready to schedule: ${infoText}`, "info");
             }
         };
@@ -848,28 +848,37 @@
                     throw new Error("Please fill in all required fields (Date, Time, Subject)");
                 }
 
-                if (leadIds.length === 0) {
+                // Format leadIds only when sending API request
+                if (!leadIds || leadIds === "") {
                     throw new Error("No leads selected for scheduling");
+                }
+
+                // Decode and split IDs only when sending to backend
+                const formattedLeadIds = decodeURIComponent(leadIds).split(',').filter(id => id.trim());
+                console.log("🔄 Formatted Lead IDs for API:", formattedLeadIds);
+
+                if (formattedLeadIds.length === 0) {
+                    throw new Error("No valid lead IDs found");
                 }
 
                 // Convert time to proper format for backend
                 const dateTimeString = convertToISTFormat(callDate, callTime);
 
                 const payload = {
-                    leadIds: leadIds,
+                    leadIds: formattedLeadIds, // Use the formatted array here
                     start_time: dateTimeString,
                     call_owner: selectedOwner.id,
                     subject: subject.trim(),
                     purpose: document.getElementById("call_purpose").value || "Prospecting",
                     agenda: document.getElementById("call_agenda").value || "Follow-up call",
-                    preferred_timings: document.getElementById("preferred_timings").value || "None", // 👈 ADD THIS
-                    reminder: document.getElementById("reminder").value || "None" // 👈 ADD THIS
+                    preferred_timings: document.getElementById("preferred_timings").value || "None",
+                    reminder: document.getElementById("reminder").value || "None"
                 };
                 console.log("📤 Sending payload:", payload);
-                showMessage(`🔄 Processing ${leadIds.length} leads in batches...`, "info");
+                showMessage(`🔄 Processing ${formattedLeadIds.length} leads in batches...`, "info");
 
                 // Update button to show progress
-                btn.textContent = `Processing ${leadIds.length} leads...`;
+                btn.textContent = `Processing ${formattedLeadIds.length} leads...`;
 
                 const response = await fetch("/api/schedule-calls", {
                     method: "POST",
@@ -923,12 +932,12 @@
             // time is already in HH:MM format from input type="time"
             return `${date} ${time}:00`;
         }
+
         // Close dropdowns when clicking outside
         document.addEventListener('click', function (event) {
             if (!event.target.closest('#selected_owner') && !event.target.closest('#owner_dropdown')) {
                 document.getElementById("owner_dropdown").classList.remove("show");
             }
-
         });
     </script>
 </body>
