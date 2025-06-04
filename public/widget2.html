@@ -39,7 +39,7 @@
             margin: 0;
         }
 
-        .lead-info {
+        .account-info {
             padding: 15px 30px;
             background: #e3f2fd;
             border-left: 4px solid #2196f3;
@@ -165,7 +165,7 @@
             border: 1px solid #d1d5db;
             border-radius: 4px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             z-index: 1000;
             display: none;
@@ -219,53 +219,6 @@
             font-size: 12px;
             color: #666;
             margin: 0;
-        }
-
-        .calendar-widget {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: white;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            display: none;
-            padding: 15px;
-            width: 300px;
-        }
-
-        .calendar-widget.show {
-            display: block;
-        }
-
-        .time-slots {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 5px;
-            max-height: 150px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-
-        .time-slot {
-            padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .time-slot:hover {
-            background: #eff6ff;
-            border-color: #3b82f6;
-        }
-
-        .time-slot.selected {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
         }
 
         .action-buttons {
@@ -363,15 +316,137 @@
             border: 1px solid #93c5fd;
         }
 
-        .progress-info {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 5px;
-            font-style: italic;
+        .loading-message {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
         }
 
         .hidden {
             display: none;
+        }
+
+        /* Contact Selection Styles */
+        .contact-selector {
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            min-height: 40px;
+            cursor: pointer;
+        }
+
+        .contact-display {
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .contact-count {
+            font-size: 12px;
+            color: #666;
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .contact-dropdown {
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: 1px solid #e5e7eb;
+            display: none;
+        }
+
+        .contact-dropdown.show {
+            display: block;
+        }
+
+        .contact-item {
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .contact-item:hover {
+            background: #f8f9fa;
+        }
+
+        .contact-item:last-child {
+            border-bottom: none;
+        }
+
+        .contact-checkbox {
+            width: 16px;
+            height: 16px;
+        }
+
+        .contact-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #10b981;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-size: 13px;
+            color: #333;
+            margin: 0;
+        }
+
+        .contact-email {
+            font-size: 11px;
+            color: #666;
+            margin: 0;
+        }
+
+        .account-list {
+            margin-bottom: 15px;
+        }
+
+        .account-item {
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .account-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .account-details {
+            color: #666;
+        }
+
+        .select-all-contacts {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 12px;
+            font-weight: 500;
+            color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .select-all-contacts:hover {
+            background: #eff6ff;
         }
     </style>
 </head>
@@ -382,8 +457,8 @@
             <h1>Schedule a call</h1>
         </div>
 
-        <div class="lead-info">
-            <strong>📋 Bulk Call Scheduling:</strong> <span id="lead_count">0</span> leads selected for call scheduling
+        <div class="account-info">
+            <strong>📋 Account Call Scheduling:</strong> <span id="account_count">0</span> accounts selected, <span id="contact_count">0</span> contacts available for calling
         </div>
 
         <div class="form-content">
@@ -391,20 +466,49 @@
 
             <div class="form-row">
                 <div class="form-label">Call For</div>
-                <div class="form-field">
-                    <div class="select-wrapper">
-                        <select class="form-control required-field" disabled>
-                            <option>Lead</option>
-                        </select>
-                    </div>
+                <div class="form-field disabled-field">
+                    <select class="form-control" disabled>
+                        <option>Contact</option>
+                    </select>
+                    <span class="lock-icon">🔒</span>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-label">Related To</div>
+                <div class="form-field disabled-field">
+                    <select class="form-control" disabled>
+                        <option>Account</option>
+                    </select>
+                    <span class="lock-icon">🔒</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Accounts</div>
                 <div class="form-field">
-                    <div class="search-input">
-                        <input type="text" class="form-control" placeholder="Search accounts..." disabled>
+                    <div id="account_list" class="account-list">
+                        <!-- Account names will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">Select Contacts</div>
+                <div class="form-field" style="position: relative;">
+                    <div class="contact-selector" onclick="toggleContactDropdown()" id="contact_selector">
+                        <div class="contact-display">
+                            <span id="selected_contacts_text">Select contacts to call...</span>
+                            <span class="contact-count" id="selected_count">0 selected</span>
+                        </div>
+                        <div id="contact_dropdown" class="contact-dropdown">
+                            <div class="select-all-contacts" onclick="toggleAllContacts(event)">
+                                <input type="checkbox" id="select_all_checkbox"> Select All Contacts
+                            </div>
+                            <div id="contact_list">
+                                <!-- Contacts will be populated here -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -462,7 +566,7 @@
                 <div class="form-label">Subject</div>
                 <div class="form-field">
                     <input type="text" id="call_subject" class="form-control required-field"
-                        placeholder="Call scheduled with lead">
+                        placeholder="Call scheduled with contact">
                 </div>
             </div>
 
@@ -497,120 +601,9 @@
                             <option value="Project">Project</option>
                             <option value="Desk Work">Desk Work</option>
                             <option value="Product Feedback">Product Feedback</option>
-                            <option value="Payment Collection & Reconciliation">Payment Collection & Reconciliation
-                            </option>
-
-                            <!-- State-based Acquisition Campaigns -->
-                            <option value="WV Acquisition - SX Products Family">WV Acquisition - SX Products Family
-                            </option>
-                            <option value="ID Acquisition - SX Products Family">ID Acquisition - SX Products Family
-                            </option>
-                            <option value="WA Acquisition - SX Products Family">WA Acquisition - SX Products Family
-                            </option>
-                            <option value="DE Acquisition - SX Products Family">DE Acquisition - SX Products Family
-                            </option>
-                            <option value="DC Acquisition - SX Products Family">DC Acquisition - SX Products Family
-                            </option>
-                            <option value="CO Acquisition - SX Products Family">CO Acquisition - SX Products Family
-                            </option>
-                            <option value="MS Acquisition - SX Products Family">MS Acquisition - SX Products Family
-                            </option>
-                            <option value="NM Acquisition - SX Products Family">NM Acquisition - SX Products Family
-                            </option>
-                            <option value="UT Acquisition - SX Products Family">UT Acquisition - SX Products Family
-                            </option>
-                            <option value="MO Acquisition - SX Products Family">MO Acquisition - SX Products Family
-                            </option>
-                            <option value="MN Acquisition - SX Products Family">MN Acquisition - SX Products Family
-                            </option>
-                            <option value="CA Acquisition - SX Products Family">CA Acquisition - SX Products Family
-                            </option>
-                            <option value="KS Acquisition - SX Products Family">KS Acquisition - SX Products Family
-                            </option>
-                            <option value="VA Acquisition - SX Products Family">VA Acquisition - SX Products Family
-                            </option>
-                            <option value="KY Acquisition - SX Products Family">KY Acquisition - SX Products Family
-                            </option>
-                            <option value="WI Acquisition - SX Products Family">WI Acquisition - SX Products Family
-                            </option>
-                            <option value="OH Acquisition - SX Products Family">OH Acquisition - SX Products Family
-                            </option>
-                            <option value="OK Acquisition - SX Products Family">OK Acquisition - SX Products Family
-                            </option>
-                            <option value="SC Acquisition - SX Products Family">SC Acquisition - SX Products Family
-                            </option>
-                            <option value="OR Acquisition - SX Products Family">OR Acquisition - SX Products Family
-                            </option>
-                            <option value="New Jersey-SX Products Family">New Jersey-SX Products Family</option>
-                            <option value="Tennessee-SX Products Family">Tennessee-SX Products Family</option>
-                            <option value="Texas Acquisition - SX Products Family">Texas Acquisition - SX Products
-                                Family</option>
-                            <option value="Hawaii-SX Products Family">Hawaii-SX Products Family</option>
-                            <option value="Massachusetts Acquisition - SX Products Family">Massachusetts Acquisition -
-                                SX Products Family</option>
-                            <option value="Florida Acquisition - SX Products Family">Florida Acquisition - SX Products
-                                Family</option>
-                            <option value="North Carolina Acquisition - SX Products Family">North Carolina Acquisition -
-                                SX Products Family</option>
-
-                            <!-- Customer Acquisition Campaigns -->
-                            <option value="RI- Customer Acquisition Campaign">RI- Customer Acquisition Campaign</option>
-                            <option value="NV- Customer Acquisition Campaign">NV- Customer Acquisition Campaign</option>
-                            <option value="NY-New Client Acquisition Campaign">NY-New Client Acquisition Campaign
-                            </option>
-                            <option value="MD- Customer Acquisition Campaign">MD- Customer Acquisition Campaign</option>
-                            <option value="LA-Customer Acquisition Campaign">LA-Customer Acquisition Campaign</option>
-                            <option value="IL-Customer Acquisition Campaign">IL-Customer Acquisition Campaign</option>
-                            <option value="AZ- Customer Acquisition Campaign">AZ- Customer Acquisition Campaign</option>
-                            <option value="California- Customer Acquisition Campaign">California- Customer Acquisition
-                                Campaign</option>
-                            <option value="Alabama - Customer Acquisition Campaign">Alabama - Customer Acquisition
-                                Campaign</option>
-                            <option value="PA- Customer Acquisition Campaign">PA- Customer Acquisition Campaign</option>
-                            <option value="Georgia- Customer Acquisition Campaign">Georgia- Customer Acquisition
-                                Campaign</option>
-                            <option value="Connecticut- Customer Acquisition Campaign">Connecticut- Customer Acquisition
-                                Campaign</option>
-                            <option value="NC- Customer Acquisition Campaign">NC- Customer Acquisition Campaign</option>
-                            <option value="Florida- Customer Acquisition Campaign">Florida- Customer Acquisition
-                                Campaign</option>
-                            <option value="Texas-Customer Acquisition Campaign">Texas-Customer Acquisition Campaign
-                            </option>
-                            <option value="New Client Acquisition Campaign">New Client Acquisition Campaign</option>
-                            <option value="IA-SX Products Family">IA-SX Products Family</option>
-
-                            <!-- Specific Campaigns & Programs -->
-                            <option value="IST AM calling list">IST AM calling list</option>
-                            <option value="New client acquisition : May and June 23">New client acquisition : May and
-                                June 23</option>
-                            <option value="Samples sent in April and May">Samples sent in April and May</option>
-                            <option value="Kama Lustra80">Kama Lustra80</option>
-                            <option value="Send Herbal Products">Send Herbal Products</option>
-                            <option value="Attempt 2 for Lead Status Manager not there">Attempt 2 for Lead Status
-                                Manager not there</option>
-                            <option value="Herbal Product Manual Campaign -Osmar">Herbal Product Manual Campaign -Osmar
-                            </option>
-                            <option value="USA visit Jan 2024">USA visit Jan 2024</option>
-                            <option
-                                value="Christmas Offer For min 500 quantity (Kamagra Chewable $3)&(Kamagra 100 mg gold 2.5)">
-                                Christmas Offer For min 500 quantity (Kamagra Chewable $3)&(Kamagra 100 mg gold 2.5)
-                            </option>
-                            <option value="Dormant account activation">Dormant account activation</option>
-                            <option value="Kama Exstasy 200">Kama Exstasy 200</option>
-                            <option value="Kamagra 100 MG Sale">Kamagra 100 MG Sale</option>
-                            <option value="Adult entertainment Center- Client Acquisition">Adult entertainment Center-
-                                Client Acquisition</option>
-                            <option value="Michigan Client Acquisition">Michigan Client Acquisition</option>
+                            <option value="Payment Collection & Reconciliation">Payment Collection & Reconciliation</option>
                             <option value="Follow up - Sample Sent">Follow up - Sample Sent</option>
-                            <option value="Indiana Client Acquisition">Indiana Client Acquisition</option>
-                            <option value="Arkansas Client Acquisition">Arkansas Client Acquisition</option>
-                            <option value="Sample Send- Herbal Extra Strong">Sample Send- Herbal Extra Strong</option>
                             <option value="Regular Recurring Order Taking">Regular Recurring Order Taking</option>
-                            <option value="Arizona Client Acquisition">Arizona Client Acquisition</option>
-                            <option value="Client Inbound Missed Call">Client Inbound Missed Call</option>
-                            <option value="Super Kamagra Jelly Stock Clearance">Super Kamagra Jelly Stock Clearance
-                            </option>
-                            <option value="New York Client Acquisition">New York Client Acquisition</option>
                             <option value="Sales Order Calls">Sales Order Calls</option>
                         </select>
                     </div>
@@ -658,7 +651,10 @@
     </div>
 
     <script>
-        let leadIds = [];
+        let accountIds = [];
+        let accountData = [];
+        let allContacts = [];
+        let selectedContacts = [];
         let selectedOwner = {
             id: "357451000020463001",
             name: "Atharv Pawle",
@@ -680,55 +676,242 @@
             { id: "357451000031401001", name: "Tech Team", email: "tech@americanwellness.biz", avatar: "TT" },
         ];
 
-        const timeSlots = [
-            "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
-            "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
-            "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM"
-        ];
-
-        window.onload = () => {
-            // FIXED CODE - Better URL parameter handling
+        window.onload = async () => {
+            // Parse URL parameters
             const params = new URLSearchParams(window.location.search);
             const recordIdsParam = params.get('recordIds');
+            const recordType = params.get('recordType');
 
-            if (recordIdsParam) {
-                // Handle both URL-encoded and regular commas
+            if (recordIdsParam && recordType === 'Accounts') {
                 const decodedParam = decodeURIComponent(recordIdsParam);
-                leadIds = decodedParam.split(',').filter(id => id.trim());
-                console.log("✅ Raw param:", recordIdsParam);
-                console.log("✅ Decoded param:", decodedParam);
-                console.log("✅ Parsed Lead IDs:", leadIds);
+                accountIds = decodedParam.split(',').filter(id => id.trim());
+                console.log("✅ Account IDs:", accountIds);
             } else {
-                console.log("❌ No recordIds in URL");
-                leadIds = [];
+                console.log("❌ No account IDs in URL or incorrect record type");
+                accountIds = [];
             }
 
-            document.getElementById("lead_count").innerText = leadIds.length;
-
-            // Set default date to tomorrow
+            // Set default date and time
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             document.getElementById("call_date").value = tomorrow.toISOString().split('T')[0];
-
-            // Set default time to 2:00 PM in 24-hour format
             document.getElementById("call_time").value = "14:00";
 
             // Initialize owners dropdown
             initializeOwnersDropdown();
-            // Remove initializeTimeSlots() since we don't need it anymore
 
-            // If no leads selected, show error
-            if (leadIds.length === 0) {
-                showMessage("No leads selected. Please select leads from the CRM and try again.", "error");
+            if (accountIds.length === 0) {
+                showMessage("No accounts selected. Please select accounts from the CRM and try again.", "error");
                 document.getElementById("schedule_btn").disabled = true;
             } else {
-                // Show lead processing info
-                const infoText = leadIds.length === 1
-                    ? "1 lead will be processed"
-                    : `${leadIds.length} leads will be processed in optimized batches`;
-                showMessage(`📋 Ready to schedule: ${infoText}`, "info");
+                // Load account data and contacts
+                await loadAccountsAndContacts();
             }
         };
+
+        async function loadAccountsAndContacts() {
+            try {
+                showMessage("🔄 Loading accounts and contacts...", "loading");
+                
+                // Simulate API call - replace with actual endpoint
+                const response = await fetch(`/api/accounts/bulk-contacts?accountIds=${accountIds.join(',')}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    accountData = data.accounts;
+                    allContacts = [];
+                    
+                    // Flatten all contacts from all accounts
+                    accountData.forEach(account => {
+                        account.contacts.forEach(contact => {
+                            allContacts.push({
+                                ...contact,
+                                accountId: account.accountId,
+                                accountName: account.accountName
+                            });
+                        });
+                    });
+
+                    updateUI();
+                    showMessage(`✅ Loaded ${accountData.length} accounts with ${allContacts.length} total contacts`, "success");
+                } else {
+                    throw new Error(data.message || "Failed to load account data");
+                }
+            } catch (error) {
+                console.error("❌ Error loading accounts:", error);
+                showMessage("❌ Failed to load account data: " + error.message, "error");
+                
+                // Mock data for testing
+                loadMockData();
+            }
+        }
+
+        function loadMockData() {
+            // Mock data for testing
+            accountData = [
+                {
+                    accountId: "357451000123456",
+                    accountName: "Andy's Adult World",
+                    contactCount: 3,
+                    contacts: [
+                        { id: "357451000789001", name: "John Doe", email: "john@andysadultworld.com", phone: "+1234567890" },
+                        { id: "357451000789002", name: "Jane Smith", email: "jane@andysadultworld.com", phone: "+1234567891" },
+                        { id: "357451000789003", name: "Bob Wilson", email: "bob@andysadultworld.com", phone: "+1234567892" }
+                    ]
+                },
+                {
+                    accountId: "357451000123457", 
+                    accountName: "XYZ Corporation",
+                    contactCount: 2,
+                    contacts: [
+                        { id: "357451000789004", name: "Alice Brown", email: "alice@xyzcorp.com", phone: "+1234567893" },
+                        { id: "357451000789005", name: "Charlie Davis", email: "charlie@xyzcorp.com", phone: "+1234567894" }
+                    ]
+                }
+            ];
+
+            allContacts = [];
+            accountData.forEach(account => {
+                account.contacts.forEach(contact => {
+                    allContacts.push({
+                        ...contact,
+                        accountId: account.accountId,
+                        accountName: account.accountName
+                    });
+                });
+            });
+
+            updateUI();
+            showMessage(`📋 Mock data loaded: ${accountData.length} accounts with ${allContacts.length} contacts`, "info");
+        }
+
+        function updateUI() {
+            // Update account count
+            document.getElementById("account_count").textContent = accountData.length;
+            document.getElementById("contact_count").textContent = allContacts.length;
+
+            // Display account list
+            const accountList = document.getElementById("account_list");
+            accountList.innerHTML = "";
+            
+            accountData.forEach(account => {
+                const accountItem = document.createElement("div");
+                accountItem.className = "account-item";
+                accountItem.innerHTML = `
+                    <div class="account-name">${account.accountName}</div>
+                    <div class="account-details">${account.contactCount} contacts available</div>
+                `;
+                accountList.appendChild(accountItem);
+            });
+
+            // Populate contact dropdown
+            populateContactDropdown();
+        }
+
+        function populateContactDropdown() {
+            const contactList = document.getElementById("contact_list");
+            contactList.innerHTML = "";
+
+            allContacts.forEach(contact => {
+                const contactItem = document.createElement("div");
+                contactItem.className = "contact-item";
+                contactItem.onclick = (e) => toggleContactSelection(contact.id, e);
+                
+                const initials = contact.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+                
+                contactItem.innerHTML = `
+                    <input type="checkbox" class="contact-checkbox" id="contact_${contact.id}">
+                    <div class="contact-avatar">${initials}</div>
+                    <div class="contact-info">
+                        <div class="contact-name">${contact.name}</div>
+                        <div class="contact-email">${contact.email} • ${contact.accountName}</div>
+                    </div>
+                `;
+                contactList.appendChild(contactItem);
+            });
+        }
+
+        function toggleContactDropdown() {
+            const dropdown = document.getElementById("contact_dropdown");
+            dropdown.classList.toggle("show");
+        }
+
+        function toggleContactSelection(contactId, event) {
+            if (event) event.stopPropagation();
+            
+            const checkbox = document.getElementById(`contact_${contactId}`);
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                if (!selectedContacts.includes(contactId)) {
+                    selectedContacts.push(contactId);
+                }
+            } else {
+                selectedContacts = selectedContacts.filter(id => id !== contactId);
+            }
+            
+            updateContactSelection();
+        }
+
+        function toggleAllContacts(event) {
+            event.stopPropagation();
+            
+            const selectAllCheckbox = document.getElementById("select_all_checkbox");
+            const shouldSelectAll = !selectAllCheckbox.checked;
+            
+            selectAllCheckbox.checked = shouldSelectAll;
+            
+            if (shouldSelectAll) {
+                selectedContacts = allContacts.map(contact => contact.id);
+            } else {
+                selectedContacts = [];
+            }
+            
+            // Update all individual checkboxes
+            allContacts.forEach(contact => {
+                const checkbox = document.getElementById(`contact_${contact.id}`);
+                if (checkbox) checkbox.checked = shouldSelectAll;
+            });
+            
+            updateContactSelection();
+        }
+
+        function updateContactSelection() {
+            const selectedCount = selectedContacts.length;
+            const totalCount = allContacts.length;
+            
+            // Update display text
+            const selectedText = document.getElementById("selected_contacts_text");
+            const countDisplay = document.getElementById("selected_count");
+            
+            if (selectedCount === 0) {
+                selectedText.textContent = "Select contacts to call...";
+            } else if (selectedCount === 1) {
+                const contact = allContacts.find(c => c.id === selectedContacts[0]);
+                selectedText.textContent = contact ? contact.name : "1 contact selected";
+            } else {
+                selectedText.textContent = `${selectedCount} contacts selected`;
+            }
+            
+            countDisplay.textContent = `${selectedCount} selected`;
+            
+            // Update select all checkbox state
+            const selectAllCheckbox = document.getElementById("select_all_checkbox");
+            if (selectedCount === totalCount) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (selectedCount === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
+            
+            // Enable/disable schedule button
+            const scheduleBtn = document.getElementById("schedule_btn");
+            scheduleBtn.disabled = selectedCount === 0;
+        }
 
         function initializeOwnersDropdown() {
             const ownerList = document.getElementById("owner_list");
@@ -739,26 +922,13 @@
                 item.className = "dropdown-item";
                 item.onclick = () => selectOwner(owner);
                 item.innerHTML = `
-          <div class="user-avatar">${owner.avatar}</div>
-          <div class="user-info">
-            <div class="user-name">${owner.name}</div>
-            <div class="user-email">${owner.email}</div>
-          </div>
-        `;
+                    <div class="user-avatar">${owner.avatar}</div>
+                    <div class="user-info">
+                        <div class="user-name">${owner.name}</div>
+                        <div class="user-email">${owner.email}</div>
+                    </div>
+                `;
                 ownerList.appendChild(item);
-            });
-        }
-
-        function initializeTimeSlots() {
-            const timeSlotsContainer = document.getElementById("time_slots");
-            timeSlotsContainer.innerHTML = "";
-
-            timeSlots.forEach(time => {
-                const slot = document.createElement("div");
-                slot.className = "time-slot";
-                slot.textContent = time;
-                slot.onclick = () => selectTime(time);
-                timeSlotsContainer.appendChild(slot);
             });
         }
 
@@ -767,34 +937,17 @@
             dropdown.classList.toggle("show");
         }
 
-        function toggleTimeDropdown() {
-            const dropdown = document.getElementById("time_dropdown");
-            dropdown.classList.toggle("show");
-        }
-
         function selectOwner(owner) {
             selectedOwner = owner;
             const selectedDiv = document.getElementById("selected_owner");
             selectedDiv.innerHTML = `
-        <div class="user-avatar">${owner.avatar}</div>
-        <div class="user-info">
-          <div class="user-name">${owner.name}</div>
-        </div>
-        <span style="margin-left: auto;">▼</span>
-      `;
+                <div class="user-avatar">${owner.avatar}</div>
+                <div class="user-info">
+                    <div class="user-name">${owner.name}</div>
+                </div>
+                <span style="margin-left: auto;">▼</span>
+            `;
             toggleOwnerDropdown();
-        }
-
-        function selectTime(time) {
-            document.getElementById("call_time").value = time;
-
-            // Update selected state
-            document.querySelectorAll(".time-slot").forEach(slot => {
-                slot.classList.remove("selected");
-            });
-            event.target.classList.add("selected");
-
-            toggleTimeDropdown();
         }
 
         function filterOwners(searchTerm) {
@@ -819,9 +972,11 @@
             messageDiv.textContent = message;
             messageDiv.classList.remove("hidden");
 
-            setTimeout(() => {
-                messageDiv.classList.add("hidden");
-            }, 5000);
+            if (type !== "loading") {
+                setTimeout(() => {
+                    messageDiv.classList.add("hidden");
+                }, 5000);
+            }
         }
 
         function cancelSchedule() {
@@ -848,30 +1003,32 @@
                     throw new Error("Please fill in all required fields (Date, Time, Subject)");
                 }
 
-                if (leadIds.length === 0) {
-                    throw new Error("No leads selected for scheduling");
+                if (selectedContacts.length === 0) {
+                    throw new Error("Please select at least one contact to call");
                 }
 
                 // Convert time to proper format for backend
                 const dateTimeString = convertToISTFormat(callDate, callTime);
 
                 const payload = {
-                    leadIds: leadIds,
+                    accountIds: accountIds,
+                    contactIds: selectedContacts,
                     start_time: dateTimeString,
                     call_owner: selectedOwner.id,
                     subject: subject.trim(),
                     purpose: document.getElementById("call_purpose").value || "Prospecting",
                     agenda: document.getElementById("call_agenda").value || "Follow-up call",
-                    preferred_timings: document.getElementById("preferred_timings").value || "None", // 👈 ADD THIS
-                    reminder: document.getElementById("reminder").value || "None" // 👈 ADD THIS
+                    preferred_timings: document.getElementById("preferred_timings").value || "None",
+                    reminder: document.getElementById("reminder").value || "None"
                 };
+
                 console.log("📤 Sending payload:", payload);
-                showMessage(`🔄 Processing ${leadIds.length} leads in batches...`, "info");
+                showMessage(`🔄 Processing ${selectedContacts.length} contacts from ${accountIds.length} accounts...`, "info");
 
                 // Update button to show progress
-                btn.textContent = `Processing ${leadIds.length} leads...`;
+                btn.textContent = `Processing ${selectedContacts.length} contacts...`;
 
-                const response = await fetch("/api/schedule-calls", {
+                const response = await fetch("/api/schedule-account-calls", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -885,9 +1042,10 @@
 
                 if (response.ok) {
                     // Enhanced success message with details
-                    const { summary, results } = data;
-                    let successMsg = `✅ Bulk scheduling complete!\n`;
-                    successMsg += `📊 ${summary.successfulCalls}/${summary.totalLeads} calls created successfully`;
+                    const { summary } = data;
+                    let successMsg = `✅ Account call scheduling complete!\n`;
+                    successMsg += `📊 ${summary.successfulCalls}/${summary.totalContacts} calls created successfully`;
+                    successMsg += `\n🏢 ${summary.totalAccounts} accounts processed`;
                     successMsg += `\n📈 Success rate: ${summary.successRate}`;
 
                     if (summary.failedCalls > 0) {
@@ -898,7 +1056,7 @@
                     showMessage(successMsg, "success");
 
                     // Show detailed results in console
-                    console.log("📋 Detailed Results:", results);
+                    console.log("📋 Detailed Results:", data.accountResults);
 
                     // Auto-close after success (optional)
                     setTimeout(() => {
@@ -923,12 +1081,16 @@
             // time is already in HH:MM format from input type="time"
             return `${date} ${time}:00`;
         }
+
         // Close dropdowns when clicking outside
         document.addEventListener('click', function (event) {
             if (!event.target.closest('#selected_owner') && !event.target.closest('#owner_dropdown')) {
                 document.getElementById("owner_dropdown").classList.remove("show");
             }
-
+            
+            if (!event.target.closest('#contact_selector')) {
+                document.getElementById("contact_dropdown").classList.remove("show");
+            }
         });
     </script>
 </body>
